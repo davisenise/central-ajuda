@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<title>Central do Entregador — (Template)</title>
+<style>
+/*
+  CENTRAL DO ENTREGADOR — VERSAO POR BUSCA
+  Autor: Davi Senise
+
+  Diferenca pra versao interna: aqui a porta de entrada e a BUSCA.
+  O entregador digita o nome do contrato onde vai entregar e cai
+  direto nas regras daquele contrato. Tem tambem um tutorial geral
+  (videos + duvidas comuns) que nao depende de contrato.
+
+  TODOS OS DADOS SAO FICTICIOS. Pra usar, mexa so no objeto DADOS.
+*/
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+:root{
+  --red:#e8282c;--red-dark:#a01014;--red-glow:rgba(232,40,44,.35);
+  --bg:#0a0a0a;--surface:#161616;--surface2:#1e1e1e;
+  --border:rgba(255,255,255,.08);--border-red:rgba(232,40,44,.45);
+  --text:#f2f2f2;--muted:#888;--muted2:#aaa;
+  --tag-bg:rgba(232,40,44,.12);--tag-border:rgba(232,40,44,.4);
+  --font:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+}
+html,body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:100vh}
+.app{width:100%;max-width:480px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column}
+.screen{display:none;flex-direction:column;flex:1}
+.screen.active{display:flex}
+.logo{width:64px;height:64px;border-radius:16px;background:var(--red);display:flex;
+      align-items:center;justify-content:center;font-weight:800;font-size:1.4rem;color:#fff;
+      box-shadow:0 0 18px var(--red-glow)}
+
+.hero{display:flex;flex-direction:column;align-items:center;padding:2.5rem 1.5rem 1rem;text-align:center}
+.hero .logo{margin-bottom:1rem}
+.hero-brand{font-size:.65rem;font-weight:700;letter-spacing:.16em;color:var(--muted2);text-transform:uppercase;margin-bottom:.35rem}
+.hero-title{font-size:1.7rem;font-weight:800;line-height:1.15;margin-bottom:.45rem}
+.hero-title span{color:var(--red)}
+.hero-sub{font-size:.84rem;color:var(--muted2);line-height:1.5;max-width:300px}
+
+.section-wrap{padding:0 1rem 2.5rem}
+.section-label{font-size:.62rem;font-weight:700;letter-spacing:.14em;color:var(--muted2);text-transform:uppercase;padding:1.1rem .2rem .6rem}
+
+.srch{position:relative;margin:.5rem 0 0}
+.srch input{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:12px;
+  padding:.95rem 1rem .95rem 2.8rem;color:var(--text);font-size:1rem;outline:none;font-family:var(--font)}
+.srch input:focus{border-color:var(--red);box-shadow:0 0 0 2px rgba(232,40,44,.15)}
+.srch input::placeholder{color:var(--muted)}
+.srch .icon{position:absolute;left:1rem;top:50%;transform:translateY(-50%);pointer-events:none}
+.srch-hint{font-size:.74rem;color:var(--muted);padding:.5rem .25rem 0}
+
+.nav{display:flex;align-items:center;gap:.75rem;padding:.85rem 1rem;border-bottom:1px solid var(--border);
+     background:rgba(10,10,10,.96);position:sticky;top:0;z-index:20}
+.nav-info{flex:1;min-width:0}
+.nav-title{font-size:.93rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.nav-sub{font-size:.68rem;color:var(--muted2)}
+.back{background:none;border:1px solid var(--border);color:var(--muted2);border-radius:8px;
+      padding:.45rem .75rem;font-size:.78rem;cursor:pointer;flex-shrink:0}
+.back:active{border-color:var(--red);color:var(--red)}
+
+.list-btn{display:flex;align-items:center;width:100%;background:var(--surface);border:1px solid var(--border);
+  border-left:3px solid var(--red);border-radius:14px;padding:1rem 1.1rem;color:var(--text);cursor:pointer;
+  margin-bottom:.5rem;gap:.85rem;text-align:left;min-height:62px}
+.list-btn:active{background:var(--surface2);border-color:var(--border-red)}
+.lb-body{flex:1;min-width:0}
+.lb-name{font-size:1rem;font-weight:700}
+.lb-sub{font-size:.71rem;color:var(--muted2);margin-top:.15rem}
+.lb-tag{font-size:.62rem;background:var(--tag-bg);border:1px solid var(--tag-border);color:#f08080;
+  padding:.15rem .55rem;border-radius:20px;white-space:nowrap}
+
+/* botoes de video */
+.video-btn{display:flex;align-items:center;gap:.75rem;background:var(--surface2);border:1px solid var(--border);
+  border-radius:12px;padding:.85rem .9rem;margin-bottom:.5rem;text-decoration:none;min-height:56px}
+.vid-ic{background:var(--red);width:38px;height:38px;border-radius:8px;display:flex;align-items:center;
+  justify-content:center;color:#fff;flex-shrink:0}
+.vid-info{flex:1;min-width:0}
+.vid-t{font-size:.84rem;font-weight:500;color:var(--text)}
+.vid-l{font-size:.7rem;color:var(--muted2)}
+
+/* alerta + checklist (iguais a versao interna) */
+.alerta{background:rgba(232,40,44,.08);border:1px solid rgba(232,40,44,.28);border-radius:12px;padding:.9rem 1rem;margin:1rem 0}
+.alerta-titulo{font-size:.62rem;font-weight:700;letter-spacing:.1em;color:var(--red);text-transform:uppercase;margin-bottom:.35rem}
+.alerta p{font-size:.84rem;color:#d8a0a0;line-height:1.5}
+.chk{background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:12px;padding:.9rem 1rem;margin:1rem 0}
+.chk-titulo{font-size:.62rem;font-weight:700;letter-spacing:.1em;color:var(--red);text-transform:uppercase;margin-bottom:.6rem}
+.chk-row{display:flex;justify-content:space-between;gap:.5rem;font-size:.84rem;padding:.35rem 0;border-bottom:1px solid rgba(255,255,255,.05)}
+.chk-row:last-of-type{border-bottom:0}
+.chk-k{color:var(--muted2)}
+.chk-v{text-align:right;color:var(--text);max-width:62%}
+.chk-obs{font-size:.8rem;color:#bbb;margin-top:.5rem}
+
+.topic-tabs{display:flex;gap:.4rem;overflow-x:auto;padding:.05rem .05rem .65rem;margin:1rem 0 .5rem;scrollbar-width:none}
+.topic-tabs::-webkit-scrollbar{display:none}
+.tab{background:var(--surface);border:1px solid var(--border);color:var(--muted2);border-radius:20px;
+  padding:.42rem .9rem;font-size:.74rem;font-weight:600;cursor:pointer;white-space:nowrap;flex-shrink:0}
+.tab.active{background:var(--red);border-color:var(--red);color:#fff}
+
+.faq{background:var(--surface);border:1px solid var(--border);border-radius:14px;margin-bottom:.55rem;overflow:hidden}
+.faq.open{border-color:var(--border-red)}
+.faq-q{display:flex;align-items:center;gap:.75rem;padding:1rem 1.1rem;cursor:pointer;min-height:56px}
+.q-num{font-size:.62rem;font-weight:700;color:var(--red);background:var(--tag-bg);border:1px solid var(--tag-border);
+  border-radius:6px;padding:.12rem .44rem;flex-shrink:0}
+.q-text{flex:1;font-size:.92rem;font-weight:500;line-height:1.35}
+.q-icon{color:var(--muted);font-size:1.2rem;transition:transform .25s}
+.faq.open .q-icon{transform:rotate(45deg);color:var(--red)}
+.faq-a{max-height:0;overflow:hidden;transition:max-height .33s ease}
+.faq.open .faq-a{max-height:800px}
+.faq-a .inner{padding:0 1.1rem 1.1rem;border-top:1px solid var(--border);padding-top:.85rem;
+  font-size:.86rem;color:#bbb;line-height:1.6}
+.faq-a .inner strong{color:var(--text)}
+
+.empty{font-size:.84rem;color:var(--muted2);padding:.6rem .25rem}
+.footer{text-align:center;padding:1.5rem 1rem 2.5rem;border-top:1px solid var(--border);margin-top:.5rem}
+.footer p{font-size:.78rem;color:var(--muted2);margin-bottom:.6rem}
+.wa{display:inline-flex;align-items:center;gap:.45rem;font-size:.9rem;font-weight:700;color:#fff;
+  text-decoration:none;padding:.7rem 1.5rem;background:var(--red);border-radius:24px}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- TELA 1: busca em primeiro plano + tutorial geral -->
+  <div class="screen active" id="s-home">
+    <div class="hero">
+      <div class="logo">CE</div>
+      <p class="hero-brand">Empresa Exemplo</p>
+      <h1 class="hero-title">Central do <span>Entregador</span></h1>
+      <p class="hero-sub">Digite o nome do contrato onde voce vai entregar</p>
+    </div>
+    <div class="section-wrap">
+      <div class="srch">
+        <span class="icon">&#128269;</span>
+        <input type="text" id="busca" placeholder="Ex: Loja Modelo A" autocomplete="off">
+      </div>
+      <p class="srch-hint" id="hint">Nao sabe o nome? Veja o tutorial geral abaixo.</p>
+
+      <div id="resultados" style="display:none"></div>
+
+      <div id="geral">
+        <div class="section-label">Tutorial geral</div>
+        <div id="videos"></div>
+        <div id="geral-faq"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TELA 2: FAQ do contrato -->
+  <div class="screen" id="s-faq">
+    <div class="nav">
+      <button class="back" onclick="irPara('s-home')">&#8592; Voltar</button>
+      <div class="nav-info"><div class="nav-title" id="faq-titulo"></div><div class="nav-sub" id="faq-sub"></div></div>
+    </div>
+    <div class="section-wrap" style="padding-top:0">
+      <div id="faq-alerta"></div>
+      <div id="faq-checklist"></div>
+      <div class="topic-tabs" id="abas"></div>
+      <div id="faq-lista"></div>
+    </div>
+    <div class="footer">
+      <p>Problema que nao esta aqui?</p>
+      <a class="wa" href="https://wa.me/0000000000">&#128242; Falar com o Suporte</a>
+    </div>
+  </div>
+
+</div>
+
+<script>
+/* ============================================================
+   DADOS (FICTICIOS) — mexa so aqui.
+   - videos: tutoriais gerais (troque o link "#" pelo seu)
+   - geral: duvidas comuns que nao dependem de contrato
+   - itens: contratos, com alerta/checklist/topicos
+   ============================================================ */
+var DADOS = {
+  videos: [
+    { titulo: "Como iniciar o expediente", label: "Video tutorial", link: "#" },
+    { titulo: "Como confirmar uma entrega", label: "Video tutorial", link: "#" }
+  ],
+  geral: [
+    { p: "O app nao abre, o que faco?", r: "Feche e abra de novo. Se nao resolver, confira sua internet e atualize o app na loja." },
+    { p: "Esqueci minha senha", r: "Na tela de login, toque em <strong>Recuperar acesso</strong> e siga os passos." },
+    { p: "Como inicio o expediente?", r: "Na tela inicial, toque em <strong>Iniciar expediente</strong> e registre o KM inicial." }
+  ],
+  itens: {
+    lojaA: {
+      nome: "Loja Modelo A", sub: "Varejo", tag: "KM por rota",
+      alerta: "Foto da entrega e nome do recebedor sao obrigatorios neste contrato.",
+      checklist: { foto: "1 obrigatoria", local: "Sim", assinatura: "Nao obrigatoria", nome: "Obrigatorio", obs: "CPF opcional." },
+      topicos: {
+        "Entrega": [
+          { p: "Como confirmo a entrega?", r: "Toque em <strong>Confirmar</strong>, tire a foto no local e informe o nome de quem recebeu." },
+          { p: "E se ninguem atender?", r: "Use <strong>Tentativa sem sucesso</strong> e registre o motivo." }
+        ],
+        "KM": [
+          { p: "Quando registro o KM?", r: "KM por rota: registre o inicial antes de sair e o final ao voltar." }
+        ]
+      }
+    },
+    lojaB: {
+      nome: "Loja Modelo B", sub: "Varejo", tag: "Acionamento",
+      alerta: "Sistema por acionamento: aceite apenas as entregas que forem suas.",
+      checklist: { foto: "Nao", local: "Nao", assinatura: "Nao", nome: "Nao", obs: "Apenas confirmar." },
+      topicos: {
+        "Entrega": [
+          { p: "Como recebo as entregas?", r: "Elas <strong>tocam na tela</strong> apos iniciar o expediente. Aceite as suas, rejeite o resto." }
+        ]
+      }
+    },
+    clinica: {
+      nome: "Clinica Exemplo", sub: "Saude", tag: "KM por expediente",
+      alerta: "Marque 'A caminho' antes de sair — o gestor acompanha o trajeto.",
+      checklist: { foto: "1 obrigatoria", local: "Sim", assinatura: "Nao obrigatoria", nome: "Obrigatorio", obs: "Confirmar item conferido." },
+      topicos: {
+        "Entrega": [
+          { p: "Como crio uma entrega?", r: "Em <strong>Atividades &gt; +</strong>, busque o local e adicione na ordem informada." }
+        ]
+      }
+    }
+  }
+};
+
+/* ============================================================
+   MOTOR — nao precisa mexer.
+   ============================================================ */
+function irPara(id){
+  document.querySelectorAll('.screen').forEach(function(s){ s.classList.remove('active'); });
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0,0);
+}
+
+// monta tutorial geral (videos + duvidas comuns)
+(function montarGeral(){
+  var v = document.getElementById('videos');
+  DADOS.videos.forEach(function(vid){
+    var a = document.createElement('a');
+    a.className = 'video-btn'; a.href = vid.link; if(vid.link !== '#') a.target = '_blank';
+    a.innerHTML = '<div class="vid-ic">&#9654;</div><div class="vid-info">'
+      + '<div class="vid-t">'+vid.titulo+'</div><div class="vid-l">'+vid.label+'</div></div>';
+    v.appendChild(a);
+  });
+  montarAccordion(document.getElementById('geral-faq'), DADOS.geral);
+})();
+
+function montarAccordion(alvo, lista){
+  alvo.innerHTML = '';
+  lista.forEach(function(qa, i){
+    var d = document.createElement('div');
+    d.className = 'faq';
+    d.innerHTML = '<div class="faq-q"><span class="q-num">'+(i+1)+'</span>'
+      + '<span class="q-text">'+qa.p+'</span><span class="q-icon">+</span></div>'
+      + '<div class="faq-a"><div class="inner">'+qa.r+'</div></div>';
+    d.querySelector('.faq-q').onclick = function(){
+      var aberto = d.classList.contains('open');
+      alvo.querySelectorAll('.faq').forEach(function(f){ f.classList.remove('open'); });
+      if(!aberto) d.classList.add('open');
+    };
+    alvo.appendChild(d);
+  });
+}
+
+function criarBotaoItem(itemId){
+  var item = DADOS.itens[itemId];
+  var b = document.createElement('button');
+  b.className = 'list-btn';
+  b.innerHTML = '<div class="lb-body"><div class="lb-name">'+item.nome+'</div>'
+    + '<div class="lb-sub">'+item.sub+'</div></div>'
+    + '<span class="lb-tag">'+item.tag+'</span>';
+  b.onclick = function(){ abrirFaq(itemId); };
+  return b;
+}
+
+function abrirFaq(itemId){
+  var item = DADOS.itens[itemId];
+  document.getElementById('faq-titulo').textContent = item.nome;
+  document.getElementById('faq-sub').textContent = item.sub;
+
+  var al = document.getElementById('faq-alerta');
+  al.innerHTML = item.alerta
+    ? '<div class="alerta"><div class="alerta-titulo">&#9888; Atencao</div><p>'+item.alerta+'</p></div>' : '';
+
+  var ck = document.getElementById('faq-checklist');
+  if(item.checklist){
+    var c = item.checklist;
+    var obs = c.obs ? '<p class="chk-obs">'+c.obs+'</p>' : '';
+    ck.innerHTML = '<div class="chk"><div class="chk-titulo">&#128203; O que preencher</div>'
+      + linhaChk('Foto', c.foto) + linhaChk('Local na foto', c.local)
+      + linhaChk('Assinatura', c.assinatura) + linhaChk('Nome recebedor', c.nome)
+      + obs + '</div>';
+  } else { ck.innerHTML = ''; }
+
+  var topicos = Object.keys(item.topicos);
+  var abas = document.getElementById('abas');
+  abas.innerHTML = '';
+  topicos.forEach(function(t, i){
+    var tab = document.createElement('button');
+    tab.className = 'tab' + (i === 0 ? ' active' : '');
+    tab.textContent = t;
+    tab.onclick = function(){
+      document.querySelectorAll('#abas .tab').forEach(function(x){ x.classList.remove('active'); });
+      tab.classList.add('active');
+      montarAccordion(document.getElementById('faq-lista'), item.topicos[t]);
+    };
+    abas.appendChild(tab);
+  });
+
+  montarAccordion(document.getElementById('faq-lista'), item.topicos[topicos[0]]);
+  irPara('s-faq');
+}
+
+function linhaChk(label, valor){
+  return '<div class="chk-row"><span class="chk-k">'+label+'</span><span class="chk-v">'+valor+'</span></div>';
+}
+
+/* busca: porta de entrada principal */
+document.getElementById('busca').addEventListener('input', function(){
+  var q = this.value.toLowerCase().trim();
+  var geral = document.getElementById('geral');
+  var hint = document.getElementById('hint');
+  var res = document.getElementById('resultados');
+  if(!q){ geral.style.display = ''; hint.style.display = ''; res.style.display = 'none'; res.innerHTML = ''; return; }
+  geral.style.display = 'none';
+  hint.style.display = 'none';
+  res.style.display = 'block';
+  res.innerHTML = '';
+  var achou = 0;
+  Object.keys(DADOS.itens).forEach(function(itemId){
+    var item = DADOS.itens[itemId];
+    var texto = (item.nome + ' ' + item.sub + ' ' + item.tag).toLowerCase();
+    if(texto.indexOf(q) !== -1){ achou++; res.appendChild(criarBotaoItem(itemId)); }
+  });
+  if(achou === 0) res.innerHTML = '<p class="empty">Nenhum contrato encontrado. Veja o tutorial geral ou fale com o suporte.</p>';
+});
+</script>
+</body>
+</html>
